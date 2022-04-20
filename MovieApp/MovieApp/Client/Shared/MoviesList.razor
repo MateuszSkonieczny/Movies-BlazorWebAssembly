@@ -1,0 +1,29 @@
+﻿@inject IJSRuntime js
+@inject HttpClient httpClient
+@inject NavigationManager uriHelper;
+
+<div class="movies-container">
+    <GenericList List="Movies">
+        <ElementTemplate Context="movie">
+            <IndividualMovie Movie="movie"
+                             DeleteMovie="DeleteMovie" @key="movie.Id" />
+            <div style="height: 10px"></div>
+        </ElementTemplate>
+    </GenericList>
+</div>
+
+@code {
+    [Parameter] public List<Movie> Movies { get; set; }
+    
+    private async Task DeleteMovie(Movie movie)
+    {
+        await js.MyFunction("custom message");
+        var confirmed = await js.Confirm($"Are you sure you want to delete {movie.Title}?");
+
+        if (confirmed)
+        {
+           await httpClient.DeleteAsync($"https://localhost:44311/api/movies/{movie.Id}");
+            Movies.Remove(movie);
+        }
+    }
+}

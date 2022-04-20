@@ -1,0 +1,69 @@
+﻿@using MovieApp.Shared.DTOs
+@inject HttpClient httpClient
+@inject NavigationManager _navigationManager
+
+@page "/movie/{Id:int}/{Title}"
+
+@if (_isSet)
+{
+    <h3>@Title details</h3>
+    <div style="height: 15px"></div>
+    
+    <div style="float: left">
+        <div class="propertyDiv"><div class="AttributeName"><strong>Title:</strong> @MovieDto.Title</div></div>
+        <div class="propertyDiv"><div class="AttributeName"><strong>Summary:</strong> @MovieDto.Summary</div></div>
+        <div style="height: 15px"></div>
+        @if (@MovieDto.InTheaters)
+        {
+            <div class="propertyDiv"><div class="AttributeName"><strong>In theaters: yes</strong> @MovieDto.Summary</div></div>
+        }
+        else
+        {
+            <div class="propertyDiv"><div class="AttributeName"><strong>In theaters: no</strong> @MovieDto.Summary</div></div>
+        }
+        <div class="propertyDiv"><div class="AttributeName"><strong>Trailer:</strong> @MovieDto.Trailer</div></div>
+        @if (MovieDto.ReleaseDate is not null)
+        {
+            <div class="propertyDiv"><div class="AttributeName"><strong>Release date:</strong> @MovieDto.ReleaseDate.GetValueOrDefault().ToShortDateString()</div></div>
+        }
+        <div style="height: 10px"></div>
+    </div>
+    <div style="margin-left: 200px">
+        
+        <div><img src="@MovieDto.Poster" width="80px" height="80px" alt="Poster"></div>
+    </div>
+    
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    
+    [Parameter]
+    public string Title { get; set; }
+    
+    private MovieDto MovieDto { get; set; }
+
+    private bool _isSet;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await GetMovie();
+    }
+
+    private async Task GetMovie()
+    {
+        var responseHTTP = await httpClient.GetAsync("https://localhost:44311/api/movies/"+Id);
+        if (responseHTTP.IsSuccessStatusCode)
+        {
+            var responseString = await responseHTTP.Content.ReadAsStringAsync();
+            MovieDto = System.Text.Json.JsonSerializer.Deserialize<MovieDto>(responseString, 
+                new System.Text.Json.JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+
+            if (MovieDto.Poster is not null)
+            {
+                _isSet = true;
+            }
+        }
+    }
+}

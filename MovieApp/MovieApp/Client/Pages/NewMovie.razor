@@ -1,0 +1,79 @@
+﻿@page "/movies/create"
+@using MovieApp.Shared.DTOs
+@using System.Text
+@using System.Text.Json.Serialization
+@using Newtonsoft.Json
+@using JsonSerializer = System.Text.Json.JsonSerializer
+@inject HttpClient httpClient
+@inject NavigationManager _navigationManager
+
+<h3>Create new movie</h3>
+
+<EditForm Model=@MovieDto OnSubmit=@Callback>
+    <div class="form-group">
+        <label>Title:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@MovieDto.Title"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Summary:</label>
+        <div>
+            <InputTextArea class="form-control" @bind-Value="@MovieDto.Summary" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>In theaters:</label>
+        <div>
+            <InputCheckbox class="form-control" @bind-Value="@MovieDto.InTheaters" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Trailer:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="MovieDto.Trailer" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Release date:</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="@MovieDto.ReleaseDate" />
+        </div>
+     </div>
+    <div class="form-group">
+        <label>Poster:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@MovieDto.Poster" />
+        </div>
+    </div>
+    
+    <input type="submit" class="btn btn-primary" value="Save"/>
+</EditForm>
+
+@code {
+    private MovieDto MovieDto { get; set; }
+    
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        MovieDto = new MovieDto();
+    }
+
+    private async Task AddMovie()
+    {
+        var serialized = JsonConvert.SerializeObject(MovieDto);
+        var content = new StringContent(serialized, Encoding.UTF8, "application/json");
+        
+        await httpClient.PostAsync("https://localhost:44311/api/movies", content);
+        
+        _navigationManager.NavigateTo("/movies");
+    }
+
+
+    private async Task Callback()
+    {
+        await AddMovie();
+    }
+
+}

@@ -1,0 +1,110 @@
+﻿@inject HttpClient httpClient
+@inject NavigationManager _navigationManager
+
+@page "/movies/edit/{Id:int}"
+@using MovieApp.Shared.DTOs
+@using Newtonsoft.Json
+@using System.Text
+<h3>Edit</h3>
+
+@if (_isSet)
+{
+    <EditForm Model=@MovieDto OnSubmit=@Callback>
+        <div class="form-group">
+            <label>Title:</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@MovieDto.Title"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Summary:</label>
+            <div>
+                <InputTextArea class="form-control" @bind-Value="@MovieDto.Summary" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label>In theaters:</label>
+            <div>
+                <InputCheckbox class="form-control" @bind-Value="@MovieDto.InTheaters" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Trailer:</label>
+            <div>
+                <InputText class="form-control" @bind-Value="MovieDto.Trailer" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Release date:</label>
+            <div>
+                <InputDate class="form-control" @bind-Value="@MovieDto.ReleaseDate" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Poster:</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@MovieDto.Poster" />
+            </div>
+        </div>
+    
+        <input type="submit" class="btn btn-primary" value="Save"/>
+    </EditForm>
+    
+}
+
+
+@code {
+    
+    [Parameter]
+    public int Id { get; set; }
+
+    private MovieDto MovieDto { get; set; }
+    
+    private bool _isSet;
+    
+    
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        MovieDto = new MovieDto();
+    }
+    
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await GetMovie();
+    }
+
+    private async Task GetMovie()
+    {
+        var responseHttp = await httpClient.GetAsync($"https://localhost:44311/api/movies/{Id}");
+        if (responseHttp.IsSuccessStatusCode)
+        {
+            var responseString = await responseHttp.Content.ReadAsStringAsync();
+            MovieDto = System.Text.Json.JsonSerializer.Deserialize<MovieDto>(responseString, 
+                new System.Text.Json.JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+
+            if (MovieDto.Poster is not null)
+            {
+                _isSet = true;
+            }
+            
+        }
+    }
+
+    private async Task UpdateMovie()
+    {
+        var serialized = JsonConvert.SerializeObject(MovieDto);
+        var content = new StringContent(serialized, Encoding.UTF8, "application/json");
+            
+        Console.WriteLine();
+        await httpClient.PutAsync($"https://localhost:44311/api/movies/{Id}", content);
+        _navigationManager.NavigateTo("/movies");
+    }
+
+    private async Task Callback()
+    {
+        await UpdateMovie();
+    }
+    
+}

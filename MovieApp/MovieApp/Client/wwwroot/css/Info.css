@@ -1,0 +1,30 @@
+.propertyValue{
+    margin-left: 10px;
+    border: 2px solid gray;
+    padding: 7px;
+    min-width: 250px;
+    max-width: 250px;
+    max-height: 40px;
+    float:left;
+    overflow: hidden;
+}
+.propertyDiv{
+    padding-bottom: 35px;
+    margin-bottom: 35px;
+    text-align: center;
+}
+.AttributeName{
+    width: 90px;
+    float: left;
+    margin-top: 8px;
+}
+
+img{
+    margin-left: 130px;
+    width: 200px;
+    height: 200px;
+}
+
+button{
+    float: left;
+}
